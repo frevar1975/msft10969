@@ -4,7 +4,7 @@ az vm create `
   --name srv2022 `
   --image MicrosoftWindowsServer:WindowsServer:2022-datacenter:latest `
   --admin-username azureadmin `
-  --admin-password Cotas3891610 `
+  --admin-password Cosas3891610 `
   --size Standard_B2s `
   --vnet-name srv2022-vnet `
   --subnet default `
