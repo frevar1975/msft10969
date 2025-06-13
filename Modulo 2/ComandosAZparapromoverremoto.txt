@@ -1,5 +1,2 @@
-az vm run-command invoke \
-  --resource-group RG-WS2016LAB \
-  --name SRVDC2016 \
-  --command-id RunPowerShellScript \
-  --scripts @"check-forest.ps1"
+az vm run-command invoke --resource-group RG-WS2022LAB--name SRVDC2022 --command-id RunPowerShellScript --scripts "@promotion-script.ps1"
+

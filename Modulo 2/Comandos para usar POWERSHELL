@@ -1,0 +1,49 @@
+Import-Module ActiveDirectory
+
+# 1) Crear OU Departments
+New-ADOrganizationalUnit `
+  -Name "Departments" `
+  -Path "DC=local,DC=curso,DC=com"
+
+# 2) Crear OU Finance y HR bajo Departments
+New-ADOrganizationalUnit `
+  -Name "Finance" `
+  -Path "OU=Departments,DC=local,DC=curso,DC=com"
+
+New-ADOrganizationalUnit `
+  -Name "HR" `
+  -Path "OU=Departments,DC=local,DC=curso,DC=com"
+
+# 3) Crear grupo Finance_Readers en OU=Finance
+New-ADGroup `
+  -Name "Finance_Readers" `
+  -SamAccountName "Finance_Readers" `
+  -GroupScope Global `
+  -GroupCategory Security `
+  -Path "OU=Finance,OU=Departments,DC=local,DC=curso,DC=com"
+
+# 4) Crear usuarios de ejemplo
+New-ADUser `
+  -Name "María Gonzalez" `
+  -SamAccountName "fuser1" `
+  -UserPrincipalName "fuser1@local.curso.com" `
+  -AccountPassword (ConvertTo-SecureString "P@ssw0rdF1!" -AsPlainText -Force) `
+  -Enabled $true `
+  -Path "OU=Finance,OU=Departments,DC=local,DC=curso,DC=com"
+
+New-ADUser `
+  -Name "Carlos Lopez" `
+  -SamAccountName "hruser1" `
+  -UserPrincipalName "hruser1@local.curso.com" `
+  -AccountPassword (ConvertTo-SecureString "P@ssw0rdH1!" -AsPlainText -Force) `
+  -Enabled $true `
+  -Path "OU=HR,OU=Departments,DC=local,DC=curso,DC=com"
+
+# 5) Añadir María al grupo Finance_Readers
+Add-ADGroupMember `
+  -Identity "Finance_Readers" `
+  -Members "fuser1"
+
+# 6) Verificación rápida
+Get-ADUser fuser1 -Properties MemberOf | Select Name,MemberOf
+Get-ADUser hruser1 | Select Name,UserPrincipalName
