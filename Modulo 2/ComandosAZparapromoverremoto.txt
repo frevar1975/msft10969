@@ -1,0 +1,5 @@
+az vm run-command invoke \
+  --resource-group RG-WS2016LAB \
+  --name SRVDC2016 \
+  --command-id RunPowerShellScript \
+  --scripts @"check-forest.ps1"
