@@ -1,0 +1,47 @@
+# ========================
+# CREAR VM LAPTOP01 (con Standard_B1s)
+# ========================
+
+# Parámetros básicos
+$resourceGroup = "RG-10969"
+$location = "East US 2"
+$vnetName = "DominioVNet"
+$subnetName = "default"
+$privateIpLaptop = "10.10.0.7"
+$vmName = "LAPTOP01"
+$adminUser = "azureuser"
+$adminPassword = ConvertTo-SecureString "Cosas3891610" -AsPlainText -Force
+$vmSize = "Standard_B1s"  # Cambiado para no exceder la cuota de vCPU
+
+# Obtener VNET y Subred existentes
+$vnet = Get-AzVirtualNetwork -Name $vnetName -ResourceGroupName $resourceGroup
+$subnet = Get-AzVirtualNetworkSubnetConfig -Name $subnetName -VirtualNetwork $vnet
+
+# NSG y regla RDP (sin IP pública)
+$nsg = New-AzNetworkSecurityGroup -Name "$vmName-nsg" -ResourceGroupName $resourceGroup -Location $location
+$nsg | Add-AzNetworkSecurityRuleConfig -Name "Allow-RDP" -Priority 1000 -Direction Inbound `
+    -Access Allow -Protocol Tcp -SourceAddressPrefix * -SourcePortRange * `
+    -DestinationAddressPrefix * -DestinationPortRange 3389 | Set-AzNetworkSecurityGroup
+
+# NIC (SIN IP pública)
+$nic = New-AzNetworkInterface -Name "$vmName-nic" `
+    -ResourceGroupName $resourceGroup `
+    -Location $location `
+    -SubnetId $subnet.Id `
+    -PrivateIpAddress $privateIpLaptop `
+    -NetworkSecurityGroupId $nsg.Id
+
+# Configuración de la VM
+$vmConfig = New-AzVMConfig -VMName $vmName -VMSize $vmSize |
+    Set-AzVMOperatingSystem -Windows -ComputerName $vmName `
+        -Credential (New-Object PSCredential($adminUser, $adminPassword)) -ProvisionVMAgent -EnableAutoUpdate |
+    Set-AzVMSourceImage -PublisherName "MicrosoftWindowsDesktop" -Offer "windows-10" `
+        -Skus "win10-21h2-pro" -Version "latest" |
+    Add-AzVMNetworkInterface -Id $nic.Id
+
+# Crear la VM
+New-AzVM -ResourceGroupName $resourceGroup -Location $location -VM $vmConfig
+
+
+
+
